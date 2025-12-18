@@ -52,7 +52,38 @@ cat shopify.app.production.toml
 path/to/cli/shopify app deploy --config=shopify.app.production.toml
 ```
 
-## 4. Troubleshooting
+## 4. Render.com Deployment (Free Tier)
 
-- **Database Errors**: Ensure `DATABASE_URL` is correct and accessible from your hosting provider.
-- **Build Fails**: Check logs. If `prisma` is missing, ensure `npm install` ran successfully.
+### Step 1: Create a Database
+1. Go to your Render Dashboard and click **New +** -> **PostgreSQL**.
+2. Give it a name (e.g., `shopify-app-db`).
+3. Select **Free** instance type.
+4. Click **Create Database**.
+5. Once created, copy the **Internal Database URL**.
+
+### Step 2: Create Web Service
+1. Click **New +** -> **Web Service**.
+2. Connect your GitHub repository (`krishna-brainbox/test`).
+3. Name your service (e.g., `shopify-app-test`).
+4. **Instance Type**: Select **Free**.
+5. **Build Command**: `npm install && npm run build`
+6. **Start Command**: `npm run docker-start`
+7. Click **Advanced** and add **Environment Variables**:
+
+| Key | Value |
+| :--- | :--- |
+| `SHOPIFY_API_KEY` | (From your Shopify Partner Dashboard) |
+| `SHOPIFY_API_SECRET` | (From your Shopify Partner Dashboard) |
+| `SCOPES` | `write_products,read_products,write_discounts,read_discounts` |
+| `DATABASE_URL` | (Paste the **Internal Database URL** from Step 1) |
+| `SHOPIFY_APP_URL` | (Leave empty for now, you will get this after deployment) |
+| `NODE_VERSION` | `20` |
+
+8. Click **Create Web Service**.
+
+### Step 3: Final Configuration
+1. Wait for the deployment to finish (it might fail correctly because URL is missing).
+2. Copy the URL Render assigned to your app (e.g., `https://shopify-app-test.onrender.com`).
+3. Go to **Environment Variables** in Render and update `SHOPIFY_APP_URL` with this new URL.
+4. **Redeploy** (Manual Deploy -> Clear build cache & deploy).
+5. Update your `shopify.app.production.toml` locally with this URL and run `shopify app deploy`.
